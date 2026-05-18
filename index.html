@@ -34,7 +34,6 @@
             border-collapse: collapse;
             background: white;
             color: black;
-            overflow-x: auto;
         }
 
         th, td {
@@ -70,6 +69,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <h1>JSON Metadata Extractor</h1>
@@ -84,14 +84,15 @@
     <br><br>
 
     <table id="resultTable">
+
         <thead>
             <tr>
                 <th>Description</th>
                 <th>theEventTypeName</th>
                 <th>performChannel</th>
                 <th>languages</th>
-                <th>outletApiId</th>
-                <th>streamId</th>
+                <th>clientContentId</th>
+                <th>eventId</th>
                 <th>channel</th>
                 <th>tier</th>
                 <th>watermarking</th>
@@ -100,6 +101,7 @@
         </thead>
 
         <tbody></tbody>
+
     </table>
 
     <script>
@@ -130,11 +132,11 @@
 
                 let watermarking = data.watermarking || "";
 
+                let clientContentId = data.clientContentId || "";
+
+                let eventId = data.eventId || "";
+
                 let languages = "";
-
-                let outletApiId = "";
-
-                let streamId = "";
 
                 const variants = data.variants || {};
 
@@ -146,14 +148,6 @@
 
                         if (variant.languages) {
                             languages = variant.languages.join(", ");
-                        }
-
-                        if (variant.outletApiId) {
-                            outletApiId = variant.outletApiId;
-                        }
-
-                        if (variant.streamId) {
-                            streamId = variant.streamId;
                         }
                     }
                 }
@@ -170,8 +164,8 @@
                         <td>${eventType}</td>
                         <td>${performChannel}</td>
                         <td>${languages}</td>
-                        <td>${outletApiId}</td>
-                        <td>${streamId}</td>
+                        <td>${clientContentId}</td>
+                        <td>${eventId}</td>
                         <td>${channel}</td>
                         <td>${tier}</td>
                         <td>${watermarking}</td>
@@ -184,7 +178,7 @@
         }
 
         function cleanText(text) {
-            return text.replace(/<br\s*\/?>/gi, "").trim();
+            return text.replace(/<br\\s*\\/?>/gi, "").trim();
         }
 
     </script>
