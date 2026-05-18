@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Metadata Extractor</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            background: #1f2937;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+            overflow-x: auto;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background: #f3f4f6;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>JSON Metadata Extractor</h1>
+
+    <div class="upload-box">
+        <label><strong>Upload Multiple JSON Files</strong></label><br>
+        <input type="file" id="jsonFiles" multiple accept=".json">
+    </div>
+
+    <button class="btn" onclick="processFiles()">Extract Metadata</button>
+
+    <br><br>
+
+    <table id="resultTable">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>theEventTypeName</th>
+                <th>performChannel</th>
+                <th>languages</th>
+                <th>outletApiId</th>
+                <th>streamId</th>
+                <th>channel</th>
+                <th>tier</th>
+                <th>watermarking</th>
+                <th>Dolby Audio</th>
+            </tr>
+        </thead>
+
+        <tbody></tbody>
+    </table>
+
+    <script>
+
+        async function processFiles() {
+
+            const files = document.getElementById('jsonFiles').files;
+
+            const tbody = document.querySelector("#resultTable tbody");
+
+            tbody.innerHTML = "";
+
+            for (const file of files) {
+
+                const text = await file.text();
+
+                const data = JSON.parse(text);
+
+                let description = cleanText(data.description || "");
+
+                let eventType = data.heEventTypeName || "";
+
+                let performChannel = data.performChannel || "";
+
+                let channel = data.channel || "";
+
+                let tier = data.tier || "";
+
+                let watermarking = data.watermarking || "";
+
+                let languages = "";
+
+                let outletApiId = "";
+
+                let streamId = "";
+
+                const variants = data.variants || {};
+
+                for (const key in variants) {
+
+                    const variant = variants[key];
+
+                    if (typeof variant === "object") {
+
+                        if (variant.languages) {
+                            languages = variant.languages.join(", ");
+                        }
+
+                        if (variant.outletApiId) {
+                            outletApiId = variant.outletApiId;
+                        }
+
+                        if (variant.streamId) {
+                            streamId = variant.streamId;
+                        }
+                    }
+                }
+
+                let dolbyAudio = "No";
+
+                if (JSON.stringify(data).toLowerCase().includes("dolby")) {
+                    dolbyAudio = "Yes";
+                }
+
+                const row = `
+                    <tr>
+                        <td>${description}</td>
+                        <td>${eventType}</td>
+                        <td>${performChannel}</td>
+                        <td>${languages}</td>
+                        <td>${outletApiId}</td>
+                        <td>${streamId}</td>
+                        <td>${channel}</td>
+                        <td>${tier}</td>
+                        <td>${watermarking}</td>
+                        <td>${dolbyAudio}</td>
+                    </tr>
+                `;
+
+                tbody.innerHTML += row;
+            }
+        }
+
+        function cleanText(text) {
+            return text.replace(/<br\s*\/?>/gi, "").trim();
+        }
+
+    </script>
+
+</body>
+</html>
