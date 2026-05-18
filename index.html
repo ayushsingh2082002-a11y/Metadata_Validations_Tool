@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON Metadata Extractor</title>
+    <title>Metadata Validation Tool</title>
 
     <style>
         body {
@@ -34,9 +35,11 @@
             border-collapse: collapse;
             background: white;
             color: black;
+            margin-top: 20px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ccc;
             padding: 10px;
             text-align: left;
@@ -75,20 +78,22 @@
     <h1>JSON Metadata Extractor</h1>
 
     <div class="upload-box">
-        <label><strong>Upload Multiple JSON Files</strong></label><br>
+        <label><strong>Upload Multiple JSON Files</strong></label><br><br>
+
         <input type="file" id="jsonFiles" multiple accept=".json">
+        <br>
+
+        <button class="btn" onclick="processFiles()">
+            Extract Metadata
+        </button>
     </div>
-
-    <button class="btn" onclick="processFiles()">Extract Metadata</button>
-
-    <br><br>
 
     <table id="resultTable">
 
         <thead>
             <tr>
                 <th>Description</th>
-                <th>heEventTypeName</th>
+                <th>theEventTypeName</th>
                 <th>performChannel</th>
                 <th>languages</th>
                 <th>clientContentId</th>
@@ -108,7 +113,7 @@
 
         async function processFiles() {
 
-            const files = document.getElementById('jsonFiles').files;
+            const files = document.getElementById("jsonFiles").files;
 
             const tbody = document.querySelector("#resultTable tbody");
 
@@ -116,72 +121,90 @@
 
             for (const file of files) {
 
-                const text = await file.text();
+                try {
 
-                const data = JSON.parse(text);
+                    const text = await file.text();
 
-                let description = cleanText(data.description || "");
+                    const data = JSON.parse(text);
 
-                let eventType = data.heEventTypeName || "";
+                    let description = cleanText(data.description || "");
 
-                let performChannel = data.performChannel || "";
+                    let eventType = data.heEventTypeName || "";
 
-                let channel = data.channel || "";
+                    let performChannel = data.performChannel || "";
 
-                let tier = data.tier || "";
+                    let channel = data.channel || "";
 
-                let watermarking = data.watermarking || "";
+                    let tier = data.tier || "";
 
-                let clientContentId = data.clientContentId || "";
+                    let watermarking = data.watermarking || "";
 
-                let eventId = data.eventId || "";
+                    let clientContentId = data.clientContentId || "";
 
-                let languages = "";
+                    let eventId = data.eventId || "";
 
-                const variants = data.variants || {};
+                    let languages = "";
 
-                for (const key in variants) {
+                    const variants = data.variants || {};
 
-                    const variant = variants[key];
+                    for (const key in variants) {
 
-                    if (typeof variant === "object") {
+                        const variant = variants[key];
 
-                        if (variant.languages) {
-                            languages = variant.languages.join(", ");
+                        if (typeof variant === "object") {
+
+                            if (variant.languages) {
+                                languages = variant.languages.join(", ");
+                            }
                         }
                     }
+
+                    let dolbyAudio = "No";
+
+                    if (JSON.stringify(data).toLowerCase().includes("dolby")) {
+                        dolbyAudio = "Yes";
+                    }
+
+                    const row = `
+                        <tr>
+                            <td>${description}</td>
+                            <td>${eventType}</td>
+                            <td>${performChannel}</td>
+                            <td>${languages}</td>
+                            <td>${clientContentId}</td>
+                            <td>${eventId}</td>
+                            <td>${channel}</td>
+                            <td>${tier}</td>
+                            <td>${watermarking}</td>
+                            <td>${dolbyAudio}</td>
+                        </tr>
+                    `;
+
+                    tbody.innerHTML += row;
+
+                } catch (error) {
+
+                    console.error("Invalid JSON File:", file.name);
+
+                    const errorRow = `
+                        <tr>
+                            <td colspan="10">
+                                Error reading file: ${file.name}
+                            </td>
+                        </tr>
+                    `;
+
+                    tbody.innerHTML += errorRow;
                 }
-
-                let dolbyAudio = "No";
-
-                if (JSON.stringify(data).toLowerCase().includes("dolby")) {
-                    dolbyAudio = "Yes";
-                }
-
-                const row = `
-                    <tr>
-                        <td>${description}</td>
-                        <td>${eventType}</td>
-                        <td>${performChannel}</td>
-                        <td>${languages}</td>
-                        <td>${clientContentId}</td>
-                        <td>${eventId}</td>
-                        <td>${channel}</td>
-                        <td>${tier}</td>
-                        <td>${watermarking}</td>
-                        <td>${dolbyAudio}</td>
-                    </tr>
-                `;
-
-                tbody.innerHTML += row;
             }
         }
 
         function cleanText(text) {
-            return text.replace(/<br\\s*\\/?>/gi, "").trim();
+            return text.replace(/<br\s*\/?>/gi, "").trim();
         }
 
     </script>
 
 </body>
+
 </html>
